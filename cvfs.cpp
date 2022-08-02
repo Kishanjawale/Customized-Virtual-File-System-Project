@@ -1,11 +1,10 @@
 /*
 **************************************************************
-//
+//////////////////////////////////////////////////////////////
 //      Customized Virtual File System Application
-//
+/////////////////////////////////////////////////////////////
 **************************************************************
 */
-
 
 /*
 **************************************************************
@@ -18,8 +17,6 @@
 #include<unistd.h>
 #include<iostream>
 #include<io.h>
-
-
 /*
 **************************************************************
 // Defining Micros
@@ -38,7 +35,6 @@
 #define START 0
 #define CURRENT 1
 #define END 2
-
 /*
 **************************************************************
 // Creting SuperBlock Structure
@@ -50,7 +46,6 @@ typedef struct superblock
     int TotalInodes;
     int FreeInode;
 }SUPERBLOCK, *PSUPERBLOCK;
-
 
 /*
 **************************************************************
@@ -116,8 +111,10 @@ PINODE head = NULL;
 
 void man(char *name)
 {
-    if(name == NULL) return;
-
+    if(name == NULL) 
+    {
+         return;
+    }
     if(strcmp(name, "create") == 0)
     {
         printf("Description : Used to create new regular file\n");
@@ -249,8 +246,14 @@ int GetFDFromName(char *name)
         break;
         i++;
     }
-    if(i == MAXINODE) return -1;
-    else return i;   
+    if(i == MAXINODE)
+    {
+        return -1;
+    } 
+    else 
+    {
+        return i;   
+    }
 }
 
 
@@ -389,13 +392,19 @@ int CreateFile(char *name, int permission)
     while (temp != NULL)
     {
         if(temp->FileType == 0)
-        break;
+        {
+                break;
+        }
+
         temp = temp->next;
     }
     while (i < MAXINODE)
     { 
         if(UFDTArr[i].ptrfiletable == NULL)
-        break;
+        {
+            break;
+        }
+
         i++;
     }
 
@@ -437,7 +446,10 @@ int rm_File(char *name)
 
     fd = GetFDFromName(name);
     if(fd == -1)
-    return -1;
+    {
+        return -1;
+    }
+    
 
     (UFDTArr[fd].ptrfiletable->ptrinode->LinkCount)--;
 
@@ -467,17 +479,30 @@ int ReadFile(int fd, char *arr, int isize)
 {
     int read_size = 0;
 
-    if(UFDTArr[fd].ptrfiletable == NULL) return -1;
+    if(UFDTArr[fd].ptrfiletable == NULL) 
+    {
+        return -1;
+    }
 
     if(UFDTArr[fd].ptrfiletable->mode != READ && UFDTArr[fd].ptrfiletable->mode != READ+WRITE)
-    return -2;
+    {
+        return -2;
+    }
+    
+    if(UFDTArr[fd].ptrfiletable->ptrinode->permission != READ && UFDTArr[fd].ptrfiletable->ptrinode->permission != READ+WRITE)
+    { 
+        return -2;
+    }
 
-    if(UFDTArr[fd].ptrfiletable->ptrinode->permission != READ && UFDTArr[fd].ptrfiletable->ptrinode->permission != READ+WRITE) return -2;
+    if(UFDTArr[fd].ptrfiletable->readoffset == UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize)
+    {
+         return -3;
+    }
 
-    if(UFDTArr[fd].ptrfiletable->readoffset == UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize) return -3;
-
-    if(UFDTArr[fd].ptrfiletable->ptrinode->FileType != REGULAR) return -4;
-
+    if(UFDTArr[fd].ptrfiletable->ptrinode->FileType != REGULAR)
+    {
+         return -4;
+    }
     read_size = (UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize) - (UFDTArr[fd].ptrfiletable->readoffset);
 
     if(read_size < isize)
@@ -508,14 +533,24 @@ int ReadFile(int fd, char *arr, int isize)
 
 int WriteFile(int fd, char *arr, int isize)
 {
-    if(((UFDTArr[fd].ptrfiletable->mode) != WRITE) && ((UFDTArr[fd].ptrfiletable->mode) != READ+WRITE)) return -1;
+    if(((UFDTArr[fd].ptrfiletable->mode) != WRITE) && ((UFDTArr[fd].ptrfiletable->mode) != READ+WRITE)) 
+    {
+        return -1;
+    }
+    if(((UFDTArr[fd].ptrfiletable->ptrinode->permission) != WRITE) && ((UFDTArr[fd].ptrfiletable->ptrinode->permission) != READ+WRITE)) 
+    {
+        return -1;
+    }
 
-    if(((UFDTArr[fd].ptrfiletable->ptrinode->permission) != WRITE) && ((UFDTArr[fd].ptrfiletable->ptrinode->permission) != READ+WRITE)) return -1;
+    if((UFDTArr[fd].ptrfiletable->writeoffset) == MAXFILESIZE)
+    {
+        return -2;
+    }
 
-    if((UFDTArr[fd].ptrfiletable->writeoffset) == MAXFILESIZE) return -2;
-
-    if((UFDTArr[fd].ptrfiletable->ptrinode->FileType) != REGULAR) return -3;
-
+    if((UFDTArr[fd].ptrfiletable->ptrinode->FileType) != REGULAR)
+    {
+         return -3;
+    }
     strncpy((UFDTArr[fd].ptrfiletable->ptrinode->Buffer) + (UFDTArr[fd].ptrfiletable->writeoffset),arr, isize);
 
     (UFDTArr[fd].ptrfiletable->writeoffset) = (UFDTArr[fd].ptrfiletable->writeoffset) + isize;
@@ -542,15 +577,18 @@ int OpenFile(char *name, int mode)
     PINODE temp = NULL;
 
     if(name == NULL || mode <= 0)
-    return -1;
-
+    {
+        return -1;
+    }
     temp = Get_Inode(name);
     if(temp == NULL)
-    return -2;
-
-    if(temp->permission < mode) 
-    return -3;
-
+    {
+        return -2;
+    }
+    if(temp->permission < mode)
+    {
+        return -3;
+    } 
     while (i < MAXINODE)
     {
         if(UFDTArr[i].ptrfiletable == NULL)
@@ -559,7 +597,10 @@ int OpenFile(char *name, int mode)
     }
 
     UFDTArr[i].ptrfiletable = (PFILETABLE)malloc(sizeof(FILETABLE));
-    if(UFDTArr[i].ptrfiletable == NULL) return -1;
+    if(UFDTArr[i].ptrfiletable == NULL)
+    {
+        return -1;
+    } 
     UFDTArr[i].ptrfiletable->count = 1;
     UFDTArr[i].ptrfiletable->mode = mode;
     if(mode == READ + WRITE)
@@ -598,7 +639,10 @@ int CloseFileByName(char *name)
     i = GetFDFromName(name);
 
     if(i == -1)
-    return -1;
+    {
+        return -1;
+    }
+    
 
     UFDTArr[i].ptrfiletable->readoffset = 0;
     UFDTArr[i].ptrfiletable->writeoffset = 0;
@@ -648,9 +692,14 @@ void CloseAllFile()
 
 int LseekFile(int fd, int size, int from)
 {
-    if((fd < 0) || (from > 2)) return -1;
-    if(UFDTArr[fd].ptrfiletable == NULL) return -1;
-
+    if((fd < 0) || (from > 2))
+    {
+        return -1;
+    } 
+    if(UFDTArr[fd].ptrfiletable == NULL) 
+    {
+        return -1;
+    }
     if((UFDTArr[fd].ptrfiletable->mode == READ) || (UFDTArr[fd].ptrfiletable->mode == READ + WRITE))
     {
         if(from == CURRENT)
@@ -662,15 +711,26 @@ int LseekFile(int fd, int size, int from)
         }
         else if(from == START)
         {
-            if(size > (UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize)) return -1;
-            if(size < 0) return -1;
+            if(size > (UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize)) 
+            {
+                return -1;
+            }
+            if(size < 0) 
+            {
+                return -1;
+            }
             (UFDTArr[fd].ptrfiletable->readoffset) = size;
         }
         else if(from == END)
         {
-            if((UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize) + size > MAXFILESIZE) return -1;
-
-            if(((UFDTArr[fd].ptrfiletable->readoffset) + size) < 0) return -1;
+            if((UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize) + size > MAXFILESIZE) 
+            {
+                return -1;
+            }
+            if(((UFDTArr[fd].ptrfiletable->readoffset) + size) < 0)
+            {
+                return -1;
+            } 
             (UFDTArr[fd].ptrfiletable->readoffset) = (UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize) +size;
         }
     }
@@ -678,24 +738,45 @@ int LseekFile(int fd, int size, int from)
     {
         if(from == CURRENT)
         {
-            if(((UFDTArr[fd].ptrfiletable->writeoffset) +size) > MAXFILESIZE) return -1;
-            if(((UFDTArr[fd].ptrfiletable->writeoffset) +size) < 0) return -1;
+            if(((UFDTArr[fd].ptrfiletable->writeoffset) +size) > MAXFILESIZE)
+            {
+                return -1;
+            }
+            if(((UFDTArr[fd].ptrfiletable->writeoffset) +size) < 0) 
+            {
+                return -1;
+            }
             if(((UFDTArr[fd].ptrfiletable->writeoffset) +size) > (UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize))
-
-            (UFDTArr[fd].ptrfiletable->writeoffset) = (UFDTArr[fd].ptrfiletable->writeoffset) +size;
+            {
+                (UFDTArr[fd].ptrfiletable->writeoffset) = (UFDTArr[fd].ptrfiletable->writeoffset) +size;
+            }
         }
         else if(from == START)
         {
-            if(size > MAXFILESIZE) return -1;
-            if(size < 0) return -1;
+            if(size > MAXFILESIZE) 
+            {
+                return -1;
+            }
+            if(size < 0)
+            {
+                return -1;
+            }
             if(size > (UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize))
-            (UFDTArr[fd].ptrfiletable->writeoffset) = size;
+            {
+                (UFDTArr[fd].ptrfiletable->writeoffset) = size;
+            }
+            
         }
         else if(from == END)
         {
-            if((UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize) + size > MAXFILESIZE) return -1;
-
-            if(((UFDTArr[fd].ptrfiletable->writeoffset) +size) < 0) return -1;
+            if((UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize) + size > MAXFILESIZE) 
+            {
+                return -1;
+            }
+            if(((UFDTArr[fd].ptrfiletable->writeoffset) +size) < 0)
+            {
+                return -1;
+            } 
             (UFDTArr[fd].ptrfiletable->writeoffset) = (UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize) +size;
         }
     }
@@ -753,10 +834,14 @@ int fstat_file(int fd)
     PINODE temp = head;
     int i = 0;
 
-    if(fd < 0) return -1;
-
-    if(UFDTArr[fd].ptrfiletable == NULL) return -2;
-
+    if(fd < 0) 
+    {
+        return -1;
+    }
+    if(UFDTArr[fd].ptrfiletable == NULL) 
+    {
+        return -2;
+    }
     temp = UFDTArr[fd].ptrfiletable->ptrinode;
 
     printf("\n----------Statical Information about file----------\n");
@@ -768,12 +853,18 @@ int fstat_file(int fd)
     printf("Reference count : %d\n",temp->ReferenceCount);
 
     if(temp->permission == 1)
-    printf("File Permission : Read only\n");
+    {
+        printf("File Permission : Read only\n");
+    
+    }
     else if(temp->permission == 2)
-    printf("File Permission : Write\n");
+    {
+        printf("File Permission : Write\n");
+    }
     else if(temp->permission == 3)
-    printf("File Permission : Read & Write\n");
-
+    {
+        printf("File Permission : Read & Write\n");
+    }
     printf("-----------------------------------------------------------\n\n");
 
     return 0;
@@ -796,15 +887,22 @@ int stat_file(char *name)
     PINODE temp = head;
     int i = 0;
 
-    if(name == NULL) return -1;
-
+    if(name == NULL) 
+    {
+        return -1;
+    }
     while (temp != NULL)
     {
         if(strcmp(name, temp->FileName) == 0)
-        break;
+        {
+            break;
+        }
         temp = temp->next;
     }
-    if(temp == NULL) return -2;
+    if(temp == NULL)
+    {
+        return -2;
+    } 
 
     printf("\n----------Statical Information about file----------\n");
     printf("File name : %s\n",temp->FileName);
@@ -815,14 +913,18 @@ int stat_file(char *name)
     printf("Reference count : %d\n",temp->ReferenceCount);
 
     if(temp->permission == 1)
-    printf("File Permission : Read only\n");
+    {
+        printf("File Permission : Read only\n");
+    }
     else if(temp->permission == 2)
-    printf("File Permission : Write\n");
+    {
+        printf("File Permission : Write\n");
+    }
     else if(temp->permission == 3)
-    printf("File Permission : Read & Write\n");
-
+    {
+        printf("File Permission : Read & Write\n");
+    }
     printf("-----------------------------------------------------\n\n");
-
     return 0;
 }
 
@@ -842,7 +944,10 @@ int truncate_File(char *name)
     int fd = GetFDFromName(name);
 
     if(fd == 1)
-    return -1;
+    {
+        return -1;
+    }
+    
 
     memset(UFDTArr[fd].ptrfiletable->ptrinode->Buffer,0,1024);
     UFDTArr[fd].ptrfiletable->readoffset = 0;
@@ -934,7 +1039,7 @@ int main()
                 DisplayHelp();
                 continue;
             }
-            else if(strcmp(command[0],"exit") == 0)
+            else if(strcmp(command[0],"exit") == 0 || strcmp(command[0],"Exit") == 0 || strcmp(command[0],"EXIT") == 0 )
             {
                 printf("Terminating the Marvellous Virtual File System\n");
                 break;
@@ -951,33 +1056,45 @@ int main()
             {
                 ret = stat_file(command[1]);
                 if(ret == -1)
-                     printf("ERROR : Incorrect parameters\n");
+                {
+                    printf("ERROR : Incorrect parameters\n");
+                }
                 if(ret == -2)
+                { 
                     printf("ERROR : There is no such file\n");
-                continue;
+                }
+                 continue;
             }
             else if(strcmp(command[0],"fstat") == 0)
             {
                 ret = fstat_file(atoi(command[1]));
                 if(ret == -1)
-                       printf("ERROR : Incorrect parameters\n");
+                {    
+                    printf("ERROR : Incorrect parameters\n");
+                }
                 if(ret == -2)
-                       printf("ERROR : There is no such file\n");
+                {
+                    printf("ERROR : There is no such file\n");
+                }
                 continue;
             }
             else if(strcmp(command[0],"close") == 0)
             {
                 ret = CloseFileByName(command[1]);
                 if(ret == -1)
-                       printf("ERROR : There is no such file\n");
-                       continue;
+                {
+                    printf("ERROR : There is no such file\n");
+                }
+                continue;
             }
             else if(strcmp(command[0],"rm") == 0)
             {
                 ret = rm_File(command[1]);
                 if(ret == -1)
-                       printf("ERROR : There is no such file\n");
-                       continue;
+                {
+                   printf("ERROR : There is no such file\n");
+                } 
+                continue;
             }
             else if(strcmp(command[0],"man") == 0)
             {
@@ -998,28 +1115,34 @@ int main()
                 if(ret == 0)
                 {
                     printf("Error : Incorrect parameter\n");
-
                     continue;
                 }
                 ret = WriteFile(fd,arr,ret);
                  if(ret == -1)
-                       printf("ERROR : Permission denied\n");
+                 {
+                      printf("ERROR : Permission denied\n");
+                 }
                  if(ret == -2)
-                       printf("ERROR : There is no sufficient memory to write\n");
+                 {     
+                    printf("ERROR : There is no sufficient memory to write\n");
+                 }
                  if(ret == -3)
-                       printf("ERROR : It is not regular file\n");
-            
+                 {
+                    printf("ERROR : It is not regular file\n");
+                 }
             }
             else if(strcmp(command[0],"truncate") == 0)
             {
                 ret = truncate_File(command[1]);
                 if(ret == -1)
-                       printf("Error : Incorrect parameter\n");
+                {
+                    printf("Error : Incorrect parameter\n");
+                }
             }
             else
             {
                 printf("\nERROR : Command not found !!!\n");
-                       continue;
+                continue;
             }
          }
          else if(count == 3)
@@ -1028,28 +1151,46 @@ int main()
                  {
                       ret = CreateFile(command[1],atoi(command[2]));
                       if(ret >= 0)
-                              printf("File is successfully created with file descriptor : %d\n",ret);
+                      {
+                          printf("File is successfully created with file descriptor : %d\n",ret);
+                      }
                       if(ret == -1)
-                              printf("ERROR : Incorrect parameters\n");
+                      {       
+                          printf("ERROR : Incorrect parameters\n");
+                      }
                       if(ret == -2)
-                              printf("ERROR : There is no inodes\n");
+                      {   
+                           printf("ERROR : There is no inodes\n");
+                      }
                       if(ret == -3)
-                              printf("ERROR : File already exists\n");
+                      {  
+                            printf("ERROR : File already exists\n");
+                      }
                       if(ret == -4)
-                              printf("ERROR : Memory allocation failure\n");
-                      continue;
+                      { 
+                            printf("ERROR : Memory allocation failure\n");
+                      }
+                        continue;
                  }
                  else if(strcmp(command[0],"open") == 0)
                  {
                       ret = OpenFile(command[1],atoi(command[2]));
                       if(ret >= 0)
-                             printf("File is successfully opened with file descriptor : %d\n",ret);
+                      {
+                            printf("File is successfully opened with file descriptor : %d\n",ret);
+                      }
                       if(ret == -1)
-                             printf("ERROR : Incorrect parameters\n");
+                      {      
+                            printf("ERROR : Incorrect parameters\n");
+                      }
                       if(ret == -2)
-                             printf("ERROR : File not present\n");
+                      {   
+                            printf("ERROR : File not present\n");
+                      }
                       if(ret == -3)
-                             printf("ERROR : Permission denied\n");
+                      {    
+                            printf("ERROR : Permission denied\n");
+                      }
                       continue;       
                  }
                  else if(strcmp(command[0],"read") == 0)
@@ -1063,20 +1204,30 @@ int main()
                       ptr = (char *)malloc(sizeof(atoi(command[2]))+1);
                       if(ptr == NULL)
                       {
-                        printf("Error : Memmory allocation failure\n");
-                        continue;
+                            printf("Error : Memmory allocation failure\n");
+                            continue;
                       }
                       ret = ReadFile(fd,ptr,atoi(command[2]));
                       if(ret == -1)
-                            printf("ERROR : File not existing\n");
+                      {
+                             printf("ERROR : File not existing\n");
+                      }
                       if(ret == -1)
-                            printf("ERROR : Permission denied\n");
+                      {
+                             printf("ERROR : Permission denied\n");
+                      }
                       if(ret == -1)
+                      { 
                             printf("ERROR : Reached at end of file\n");
+                      }
                       if(ret == -1)
+                      {
                             printf("ERROR : It is not regular file\n");
+                      }
                       if(ret == -1)
+                      {   
                             printf("ERROR : File empty\n");
+                      }
                       if(ret > 0)
                       {
                          write(2,ptr,ret);
