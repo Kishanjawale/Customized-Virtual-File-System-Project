@@ -159,6 +159,7 @@ void man(char *name)
 
     else if(strcmp(name, "open") == 0)
     {
+        
         printf("Descripton : Used to open existing file\n");
         printf("Usage : open File_name mode\n");
     }
@@ -208,20 +209,37 @@ void man(char *name)
 
 void DisplayHelp()
 {
+    printf("----------------------------------------------------------------\n");
+    printf("----------------------------------------------------------------\n");
     printf("ls : To List out all files\n");
+    printf("----------------------------------------------------------------\n");
     printf("clear : To clear console\n");
+    printf("----------------------------------------------------------------\n");
     printf("create : To create new file\n");
+    printf("----------------------------------------------------------------\n");
     printf("open : To open the file\n");
+    printf("----------------------------------------------------------------\n");
     printf("close : To close the file\n");
+    printf("----------------------------------------------------------------\n");
     printf("closeall : To close all opened files\n");
+    printf("----------------------------------------------------------------\n");
     printf("read : To read the contents from file\n");
+    printf("----------------------------------------------------------------\n");
     printf("write : To write contents into file\n");
+    printf("----------------------------------------------------------------\n");
     printf("exit : To terminate file system\n");
+    printf("----------------------------------------------------------------\n");
     printf("stat : To display information of file using name\n");
+    printf("----------------------------------------------------------------\n");
     printf("fstat : To display information of file using file descriptor\n");
+    printf("----------------------------------------------------------------\n");
     printf("truncate : To remove all data from file\n");
+    printf("----------------------------------------------------------------\n");
     printf("rm : To delete the file\n");
+    printf("----------------------------------------------------------------\n");
+    printf("----------------------------------------------------------------\n");
 }
+
 
 
 /*
@@ -277,12 +295,14 @@ PINODE Get_Inode(char *name)
     {
         return NULL;
     }
+
     while(temp != NULL)
     {
         if(strcmp(name, temp->FileName) == 0)
         {
             break;
         }
+        
         temp = temp->next;
     }
     return temp;
@@ -324,6 +344,7 @@ void CreateDILB()
             head = newn;
             temp = head;
         }
+
         else
         {
             temp->next = newn;
@@ -331,7 +352,10 @@ void CreateDILB()
         }
         i++;
     }
-    printf("DILB created successfully\n");
+    printf("_______________________________\n");
+    printf("\nDILB created successfully\n");
+    printf("_______________________________\n");
+    printf("Enter Help to view the List of Queris\n");
 }
 
 /*
@@ -353,7 +377,9 @@ void InitialiseSuperBlock()
         UFDTArr[i].ptrfiletable = NULL;
         i++;
     }
+
     SUPERBLOCKobj.TotalInodes = MAXINODE;
+    
     SUPERBLOCKobj.FreeInode = MAXINODE;
 }
 
@@ -642,7 +668,6 @@ int CloseFileByName(char *name)
     {
         return -1;
     }
-    
 
     UFDTArr[i].ptrfiletable->readoffset = 0;
     UFDTArr[i].ptrfiletable->writeoffset = 0;
@@ -765,7 +790,6 @@ int LseekFile(int fd, int size, int from)
             {
                 (UFDTArr[fd].ptrfiletable->writeoffset) = size;
             }
-            
         }
         else if(from == END)
         {
@@ -806,16 +830,19 @@ void ls_file()
     }
 
     printf("\nFile Name\tInode number\tFile size\tLink count\n");
-    printf("---------------------------------------------------------\n");
+    printf("----------------------------------------------------------------\n");
     while (temp != NULL)
     {
         if(temp-> FileType != 0)
         {
+            printf("----------------------------------------------------------------\n");
+    
             printf("%s\t\t%d\t\t%d\t\t%d\n", temp->FileName, temp->InodeNumber, temp->FileActualSize, temp->LinkCount);
+
         }
         temp = temp->next;
     }
-    printf("---------------------------------------------------------\n");
+    printf("----------------------------------------------------------------\n");
 }
 
 /*
@@ -903,7 +930,6 @@ int stat_file(char *name)
     {
         return -2;
     } 
-
     printf("\n----------Statical Information about file----------\n");
     printf("File name : %s\n",temp->FileName);
     printf("Inode number : %d\n",temp->InodeNumber);
@@ -948,13 +974,11 @@ int truncate_File(char *name)
         return -1;
     }
     
-
     memset(UFDTArr[fd].ptrfiletable->ptrinode->Buffer,0,1024);
     UFDTArr[fd].ptrfiletable->readoffset = 0;
     UFDTArr[fd].ptrfiletable->writeoffset = 0;
     UFDTArr[fd].ptrfiletable->ptrinode->FileActualSize = 0;
 }
-
 
 /*
 **************************************************************
@@ -1023,22 +1047,26 @@ int main()
             {
                 ls_file();
             }
+
             else if(strcmp(command[0],"closeall") == 0)
             {
                 CloseAllFile();
                 printf("All files closed successfully\n");
                 continue;
             }
+
             else if(strcmp(command[0],"clear") == 0)
             {
                 system("cls");
                 continue;
             }
+
             else if(strcmp(command[0],"help") == 0)
             {
                 DisplayHelp();
                 continue;
             }
+
             else if(strcmp(command[0],"exit") == 0 || strcmp(command[0],"Exit") == 0 || strcmp(command[0],"EXIT") == 0 )
             {
                 printf("Terminating the Marvellous Virtual File System\n");
@@ -1117,6 +1145,7 @@ int main()
                     printf("Error : Incorrect parameter\n");
                     continue;
                 }
+
                 ret = WriteFile(fd,arr,ret);
                  if(ret == -1)
                  {
@@ -1252,7 +1281,7 @@ int main()
                     ret = LseekFile(fd,atoi(command[2]),atoi(command[3]));
                     if(ret == -1)
                     {
-                        printf("ERROR : Unable to perform Iseek\n");
+                         printf("ERROR : Unable to perform Iseek\n");
                     }
               }
               else
@@ -1266,6 +1295,6 @@ int main()
               printf("\nERROR : Command not found !!!\n");
               continue;
          }
-     }
+    }
      return 0;
 }
